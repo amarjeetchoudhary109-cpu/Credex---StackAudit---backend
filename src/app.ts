@@ -9,15 +9,56 @@ dotenv.config();
 
 const app = express();
 
+/** Browsers send Origin without a trailing slash — normalize so allowlists match. */
+function normalizeOriginUrl(raw: string | undefined): string | null {
+  if (!raw?.trim()) return null;
+  try {
+    const u = new URL(raw.trim());
+    u.pathname = "";
+    u.search = "";
+    u.hash = "";
+    return u.origin;
+  } catch {
+    const s = raw.trim().replace(/\/+$/, "");
+    return s || null;
+  }
+}
+
+function buildAllowedOrigins(): Set<string> {
+  const pieces = [
+    process.env.FRONTEND_URL,
+    process.env.CORS_ORIGIN,
+    process.env.CORS_ORIGINS,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://credex-stackaudit-production.up.railway.app",
+    "https://credex-stackaudit-production.up.railway.app"
+  ]
+    .filter(Boolean)
+    .flatMap((s) => String(s).split(","))
+    .map((s) => normalizeOriginUrl(s.trim()))
+    .filter((o): o is string => Boolean(o));
+  return new Set(pieces);
+}
+
+const allowedOrigins = buildAllowedOrigins();
+
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_URL || "http://localhost:5173",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "https://credex-stackaudit-production.up.railway.app/",
-    ],
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const normalized = normalizeOriginUrl(origin);
+      if (normalized && allowedOrigins.has(normalized)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
+    optionsSuccessStatus: 204,
   })
 );
 

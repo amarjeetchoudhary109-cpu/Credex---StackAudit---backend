@@ -13,14 +13,54 @@ const requestLogger_1 = require("./middleware/requestLogger");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.app = app;
-app.use((0, cors_1.default)({
-    origin: [
-        process.env.FRONTEND_URL || "http://localhost:5173",
+/** Browsers send Origin without a trailing slash — normalize so allowlists match. */
+function normalizeOriginUrl(raw) {
+    if (!raw?.trim())
+        return null;
+    try {
+        const u = new URL(raw.trim());
+        u.pathname = "";
+        u.search = "";
+        u.hash = "";
+        return u.origin;
+    }
+    catch {
+        const s = raw.trim().replace(/\/+$/, "");
+        return s || null;
+    }
+}
+function buildAllowedOrigins() {
+    const pieces = [
+        process.env.FRONTEND_URL,
+        process.env.CORS_ORIGIN,
+        process.env.CORS_ORIGINS,
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://credex-stackaudit-production.up.railway.app/",
-    ],
+        "https://credex-stackaudit-production.up.railway.app",
+        "https://credex-stackaudit-production.up.railway.app"
+    ]
+        .filter(Boolean)
+        .flatMap((s) => String(s).split(","))
+        .map((s) => normalizeOriginUrl(s.trim()))
+        .filter((o) => Boolean(o));
+    return new Set(pieces);
+}
+const allowedOrigins = buildAllowedOrigins();
+app.use((0, cors_1.default)({
+    origin(origin, callback) {
+        if (!origin) {
+            callback(null, true);
+            return;
+        }
+        const normalized = normalizeOriginUrl(origin);
+        if (normalized && allowedOrigins.has(normalized)) {
+            callback(null, true);
+            return;
+        }
+        callback(null, false);
+    },
     credentials: true,
+    optionsSuccessStatus: 204,
 }));
 app.use((req, _res, next) => {
     if (req.originalUrl.startsWith("/api")) {
