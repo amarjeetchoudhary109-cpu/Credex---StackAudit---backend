@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1778315073560,
+      "tag": "0000_nice_vulcan",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778315295431,
+      "tag": "0001_fresh_kree",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778358986382,
+      "tag": "0002_uneven_hellcat",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778361120188,
+      "tag": "0003_busy_chameleon",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778397363986,
+      "tag": "0004_unusual_vulcan",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778600545633,
+      "tag": "0005_aberrant_lord_tyger",
+      "breakpoints": true
+    }
+  ]
+}

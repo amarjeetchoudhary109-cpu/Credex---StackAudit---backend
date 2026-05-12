@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    /* Project Structure */
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    /* Module System (best for Node.js) */
+    "module": "CommonJS",
+    "target": "ES2020",
+
+    /* Node Compatibility */
+    "types": ["node"],
+    "lib": ["ES2020"],
+
+    /* Interop + Imports */
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    /* Strictness */
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+
+    /* Build */
+    "sourceMap": true,
+
+    /* Performance */
+    "skipLibCheck": true
+  },
+
+  "include": ["src"],
+  "exclude": ["node_modules", "src/**/*.test.ts"]
+}
