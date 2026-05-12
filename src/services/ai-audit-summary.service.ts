@@ -75,7 +75,11 @@ Tone: helpful, sharp, founder-friendly. Plain text, no markdown.`;
         .where(eq(auditsTable.id, audit.id));
       return clipped;
     } catch (e) {
-      console.warn("[AiAuditSummary] Gemini unavailable, using fallback", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(
+        "[AiAuditSummary] Gemini unavailable, using deterministic fallback:",
+        msg.slice(0, 400)
+      );
       const fb = fallbackSummary(monthlySavings);
       await db
         .update(auditsTable)

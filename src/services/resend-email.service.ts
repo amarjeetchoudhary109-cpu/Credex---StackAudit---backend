@@ -23,13 +23,29 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Resend test sender — OK for local/dev only; production must set RESEND_FROM. */
+/** Resend sandbox sender — works without a verified domain (deliverability limits apply). */
 const RESEND_DEV_FROM = "Credex <onboarding@resend.dev>";
 
+let warnedResendFromFallback = false;
+
+/**
+ * Prefer `RESEND_FROM` (verified domain in real production).
+ * If `RESEND_API_KEY` is set but `RESEND_FROM` is missing, fall back to Resend's onboarding
+ * sender so Railway demos do not silently skip email (set `RESEND_FROM` for production mail).
+ */
 function resolveResendFrom(): string | null {
   const explicit = process.env.RESEND_FROM?.trim();
   if (explicit) {
     return explicit;
+  }
+  if (process.env.RESEND_API_KEY?.trim()) {
+    if (!warnedResendFromFallback) {
+      warnedResendFromFallback = true;
+      console.warn(
+        "[Resend] RESEND_FROM unset — using onboarding@resend.dev. Set RESEND_FROM to a verified sender for production deliverability."
+      );
+    }
+    return RESEND_DEV_FROM;
   }
   const nodeEnv = process.env.NODE_ENV;
   if (nodeEnv !== "production" && nodeEnv !== "test") {

@@ -7,6 +7,18 @@ import { ApiError } from "../utils/apiError";
 /** Current Flash default for AI Studio; bare `gemini-1.5-flash` returns 404 on v1beta. */
 export const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
 
+function logGeminiFailure(context: string, msg: string): void {
+  const soft =
+    /403|429|404|401|leaked|quota|API key not valid|PERMISSION_DENIED|RESOURCE_EXHAUSTED/i.test(
+      msg
+    );
+  if (soft) {
+    console.warn(`[Gemini] ${context} (rotate key or check quota):`, msg.slice(0, 500));
+  } else {
+    console.error(`[Gemini] ${context}:`, msg.slice(0, 500));
+  }
+}
+
 export function resolveGeminiModelId(raw: string | undefined): string {
   const id = raw?.trim() || GEMINI_DEFAULT_MODEL;
   if (id === "gemini-1.5-flash") {
@@ -88,7 +100,7 @@ ${payload}`;
       return text.trim();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.error("[Gemini]", msg);
+      logGeminiFailure("generateAuditInsights", msg);
       throw new ApiError(
         502,
         `Gemini request failed: ${msg}. Check GEMINI_MODEL and API key quota in Google AI Studio.`
@@ -127,7 +139,7 @@ ${payload}`;
       return text.trim();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.error("[Gemini] generateFounderSummary", msg);
+      logGeminiFailure("generateFounderSummary", msg);
       throw new ApiError(
         502,
         `Gemini request failed: ${msg}. Check GEMINI_MODEL and API key quota in Google AI Studio.`

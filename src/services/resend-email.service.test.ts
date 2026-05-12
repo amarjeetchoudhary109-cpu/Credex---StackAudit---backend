@@ -48,8 +48,13 @@ describe("sendLeadConfirmationEmail", () => {
     expect(sendMock).not.toHaveBeenCalled();
   });
 
-  it("returns skipped when RESEND_FROM is not set", async () => {
+  it("uses Resend onboarding sender when RESEND_FROM is unset but RESEND_API_KEY is set", async () => {
     process.env.RESEND_API_KEY = "re_test_key";
+    sendMock.mockResolvedValue({
+      data: { id: "msg_onboarding" },
+      error: null,
+      headers: null,
+    });
     const { sendLeadConfirmationEmail } = await import("./resend-email.service");
     const r = await sendLeadConfirmationEmail({
       leadId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
@@ -57,8 +62,10 @@ describe("sendLeadConfirmationEmail", () => {
       siteHomeUrl: "https://example.com",
       audit: null,
     });
-    expect(r).toEqual({ sent: false, skippedReason: "RESEND_FROM not set" });
-    expect(sendMock).not.toHaveBeenCalled();
+    expect(r).toEqual({ sent: true, messageId: "msg_onboarding" });
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const [payload] = sendMock.mock.calls[0] as [Record<string, unknown>, unknown];
+    expect(payload.from).toBe("Credex <onboarding@resend.dev>");
   });
 
   it("calls Resend with idempotency key, tags, and escaped HTML", async () => {
